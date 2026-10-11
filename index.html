@@ -13,7 +13,35 @@
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
 </head>
+
 <body>
+    <header class="site-header" id="home">
+        <div class="container header-inner">
+        <a class="brand" href="#home" aria-label="The Paper Trail home">
+            <span class="brand-icon" aria-hidden="true">✳</span>
+            <span>The Paper Trail</span>
+        </a>
+
+        <button class="menu-toggle"
+            type="button"
+            aria-label="Open navigation"
+            aria-expanded="false"
+            aria-controls="primary-navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav class="primary-nav" id="primary-navigation"
+            aria-label="Main navigation">
+            <a href="#books">Books</a>
+            <a href="#staff-picks">Staff picks</a>
+            <a href="#events">Events</a>
+            <a href="#about">Our story</a>
+            <a class="nav-cta" href="#books">Find your next read ↗</a>
+        </nav>
+        </div>
+    </header>
     
 </body>
 </html>
