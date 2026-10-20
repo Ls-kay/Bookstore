@@ -1,5 +1,6 @@
+"use client";
+
 import { useState } from "react";
-import books from "../data/books";
 import BookCard from "./BookCard";
 
 const filters = [
@@ -45,7 +46,7 @@ const events = [
   },
 ];
 
-export default function MainContent() {
+export default function MainContent({ books }) {
   const [activeFilter, setActiveFilter] = useState("all");
   const [quantities, setQuantities] = useState({});
 
