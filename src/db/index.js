@@ -1,5 +1,5 @@
-import { Pool } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema.js";
 
 const globalForDatabase = globalThis;
@@ -10,20 +10,10 @@ export function getDb() {
     throw new Error("DATABASE_URL must be set to connect to the Neon database.");
   }
 
-  if (!globalForDatabase.bookstorePool) {
-    globalForDatabase.bookstorePool = new Pool({ connectionString });
-    globalForDatabase.bookstoreDb = drizzle(globalForDatabase.bookstorePool, {
-      schema,
-    });
+  if (!globalForDatabase.bookstoreDb) {
+    const client = neon(connectionString);
+    globalForDatabase.bookstoreDb = drizzle({ client, schema });
   }
 
   return globalForDatabase.bookstoreDb;
-}
-
-export async function closeDb() {
-  if (globalForDatabase.bookstorePool) {
-    await globalForDatabase.bookstorePool.end();
-    globalForDatabase.bookstorePool = undefined;
-    globalForDatabase.bookstoreDb = undefined;
-  }
 }

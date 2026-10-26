@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BookCard from "./BookCard";
 
 const filters = [
@@ -46,9 +46,30 @@ const events = [
   },
 ];
 
-export default function MainContent({ books }) {
+export default function MainContent() {
+  const [books, setBooks] = useState([]);
+  const [status, setStatus] = useState("loading"); // "loading" | "ready" | "error"
   const [activeFilter, setActiveFilter] = useState("all");
   const [quantities, setQuantities] = useState({});
+
+  const loadBooks = useCallback(async (signal) => {
+    setStatus("loading");
+    try {
+      const response = await fetch("/api/books", { signal });
+      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+      setBooks(await response.json());
+      setStatus("ready");
+    } catch (error) {
+      if (error.name === "AbortError") return;
+      setStatus("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadBooks(controller.signal);
+    return () => controller.abort();
+  }, [loadBooks]);
 
   const filteredBooks =
     activeFilter === "all"
@@ -111,23 +132,62 @@ export default function MainContent({ books }) {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredBooks.map((book) => (
-              <BookCard
-                book={book}
-                key={book.id}
-                quantity={quantities[book.id] ?? 0}
-                onQuantityChange={(quantity) =>
-                  updateQuantity(book.id, quantity)
-                }
-              />
-            ))}
-          </div>
+          {status === "loading" && (
+            <div
+              className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
+              aria-busy="true"
+            >
+              {[0, 1, 2].map((placeholder) => (
+                <div
+                  className="h-[28rem] animate-pulse rounded-lg bg-border/60"
+                  key={placeholder}
+                />
+              ))}
+              <p className="sr-only" role="status">
+                Loading books…
+              </p>
+            </div>
+          )}
 
-          <p className="sr-only" aria-live="polite">
-            {filteredBooks.length} book{filteredBooks.length === 1 ? "" : "s"}{" "}
-            displayed.
-          </p>
+          {status === "error" && (
+            <div
+              className="rounded-2xl border border-border bg-paper p-6 text-center"
+              role="alert"
+            >
+              <p className="mb-4 text-[#77796f]">
+                We couldn&apos;t load the books just now.
+              </p>
+              <button
+                className="rounded-lg bg-ink px-4 py-2.5 text-sm font-bold text-white hover:bg-green"
+                onClick={() => loadBooks()}
+                type="button"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {status === "ready" && (
+            <>
+              <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredBooks.map((book) => (
+                  <BookCard
+                    book={book}
+                    key={book.id}
+                    quantity={quantities[book.id] ?? 0}
+                    onQuantityChange={(quantity) =>
+                      updateQuantity(book.id, quantity)
+                    }
+                  />
+                ))}
+              </div>
+
+              <p className="sr-only" aria-live="polite">
+                {filteredBooks.length} book
+                {filteredBooks.length === 1 ? "" : "s"} displayed.
+              </p>
+            </>
+          )}
 
           <section
             className="mt-10 rounded-2xl bg-paper p-5 sm:mt-12 sm:p-7"

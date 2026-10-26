@@ -1,7 +1,10 @@
 import { sql } from "drizzle-orm";
+import { loadEnvConfig } from "@next/env";
 import books from "../data/books.js";
-import { closeDb, getDb } from "./index.js";
+import { getDb } from "./index.js";
 import { products } from "./schema.js";
+
+loadEnvConfig(process.cwd());
 
 function priceToCents(price) {
   const amount = Number.parseFloat(price.replace(/[^\d.]/g, ""));
@@ -24,27 +27,23 @@ const rows = books.map((book, sortOrder) => ({
   sortOrder,
 }));
 
-try {
-  await getDb()
-    .insert(products)
-    .values(rows)
-    .onConflictDoUpdate({
-      target: products.id,
-      set: {
-        title: sql`excluded.title`,
-        author: sql`excluded.author`,
-        genre: sql`excluded.genre`,
-        categories: sql`excluded.categories`,
-        label: sql`excluded.label`,
-        priceInCents: sql`excluded.price_in_cents`,
-        coverUrl: sql`excluded.cover_url`,
-        color: sql`excluded.color`,
-        sortOrder: sql`excluded.sort_order`,
-        updatedAt: sql`now()`,
-      },
-    });
+await getDb()
+  .insert(products)
+  .values(rows)
+  .onConflictDoUpdate({
+    target: products.id,
+    set: {
+      title: sql`excluded.title`,
+      author: sql`excluded.author`,
+      genre: sql`excluded.genre`,
+      categories: sql`excluded.categories`,
+      label: sql`excluded.label`,
+      priceInCents: sql`excluded.price_in_cents`,
+      coverUrl: sql`excluded.cover_url`,
+      color: sql`excluded.color`,
+      sortOrder: sql`excluded.sort_order`,
+      updatedAt: sql`now()`,
+    },
+  });
 
-  console.log(`Seeded ${rows.length} products.`);
-} finally {
-  await closeDb();
-}
+console.log(`Seeded ${rows.length} products.`);
