@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import BookCard from "./BookCard";
+import AuthDialog from "./AuthDialog";
+import { authClient } from "../lib/auth-client.js";
 
 const filters = [
   { id: "all", label: "All books" },
@@ -51,6 +53,10 @@ export default function MainContent() {
   const [status, setStatus] = useState("loading"); // "loading" | "ready" | "error"
   const [activeFilter, setActiveFilter] = useState("all");
   const [quantities, setQuantities] = useState({});
+  const [authOpen, setAuthOpen] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const { data: session, isPending: isSessionPending } = authClient.useSession();
 
   const loadBooks = useCallback(async (signal) => {
     setStatus("loading");
@@ -83,6 +89,40 @@ export default function MainContent() {
 
   function updateQuantity(bookId, quantity) {
     setQuantities((current) => ({ ...current, [bookId]: quantity }));
+  }
+
+  async function startCheckout() {
+    if (!session?.user) {
+      setAuthOpen(true);
+      return;
+    }
+
+    setCheckoutError("");
+    setIsCheckingOut(true);
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          items: savedBooks.map((book) => ({
+            productId: book.id,
+            quantity: quantities[book.id],
+          })),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Could not start checkout.");
+      }
+      if (!result.url) {
+        throw new Error("The checkout service did not return a payment link.");
+      }
+      window.location.assign(result.url);
+    } catch (error) {
+      setCheckoutError(error.message || "Could not start checkout.");
+    } finally {
+      setIsCheckingOut(false);
+    }
   }
 
   function showStaffPicks(event) {
@@ -221,6 +261,19 @@ export default function MainContent() {
             >
               Clear reading list
             </button>
+            <button
+              className="ml-3 rounded-lg bg-ink px-4 py-2.5 text-sm font-bold text-white hover:bg-green disabled:cursor-not-allowed disabled:opacity-50"
+              type="button"
+              disabled={savedCount === 0 || isSessionPending || isCheckingOut}
+              onClick={startCheckout}
+            >
+              {isCheckingOut ? "Opening secure checkout…" : "Checkout"}
+            </button>
+            {checkoutError && (
+              <p className="mt-4 text-sm text-red-800" role="alert">
+                {checkoutError}
+              </p>
+            )}
           </section>
         </div>
       </section>
@@ -367,6 +420,7 @@ export default function MainContent() {
           </div>
         </div>
       </section>
+      {authOpen && <AuthDialog onClose={() => setAuthOpen(false)} />}
     </>
   );
 }
