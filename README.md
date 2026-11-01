@@ -50,7 +50,10 @@ After changing the schema, create and apply a migration with `bun run db:generat
    Stripe. Physical books aren't eligible for Stripe Managed Payments, so the
    Checkout Session disables Managed Payments and classifies line items as
    general tangible goods. Only a verified webhook event matching the order's
-   Stripe session, currency, and total can mark an order paid.
+   Stripe session, currency, and total can mark an order paid. Stripe redirects
+   to `/checkout/success?session_id=...`; that page checks the authenticated
+   user's order through `GET /api/orders?session_id=...` and polls briefly while
+   the webhook confirmation is pending.
 
 The checkout API enforces the session itself. The Next.js `proxy.js` also blocks
 requests with no Better Auth session cookie before they reach that route; the
@@ -62,8 +65,12 @@ create an order.
 For a deployed Next.js app, set `DATABASE_URL`, `BETTER_AUTH_SECRET`,
 `BETTER_AUTH_URL`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET` in the
 hosting provider's environment settings. Use a Stripe test secret key while
-testing. Set
-`BETTER_AUTH_URL` to the app's public origin (for example,
-`https://your-app.example`), without an `/api` path. Redeploy after changing
-these settings. The local `.env.local` URL must match the origin used to open
-the app in the browser; restart the development server after changing it.
+testing; production can use the appropriate live key. Configure a Stripe
+webhook endpoint at `https://your-app.example/api/stripe/webhook` for the
+checkout session completion, expiration, and asynchronous payment events, and
+use that endpoint's signing secret for `STRIPE_WEBHOOK_SECRET`. Set
+`BETTER_AUTH_URL` to the app's public origin without an `/api` path. Redeploy
+after changing these settings. The app is not deployed yet, so production keys
+and a public webhook endpoint still need to be configured after deployment.
+The local `.env.local` URL must match the origin used to open the app in the
+browser; restart the development server after changing it.

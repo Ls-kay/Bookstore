@@ -22,7 +22,7 @@ export async function POST(request) {
   if (!secretKey) {
     return jsonError("Checkout is not configured. Set STRIPE_SECRET_KEY.", 503);
   }
-  if (!secretKey.startsWith("sk_test_")) {
+  if (!secretKey.startsWith("sk_test_") && process.env.NODE_ENV !== "production") {
     return jsonError(
       "Use a Stripe test secret key (sk_test_...) for this checkout.",
       503,
@@ -131,7 +131,7 @@ export async function POST(request) {
           },
         },
       })),
-      success_url: new URL("/?checkout=success", appUrl).toString(),
+      success_url: `${new URL("/checkout/success", appUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: new URL("/?checkout=cancelled", appUrl).toString(),
     });
 
