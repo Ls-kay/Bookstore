@@ -116,6 +116,7 @@ export async function POST(request) {
   try {
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "payment",
+      managed_payments: { enabled: false },
       customer_email: session.user.email,
       client_reference_id: orderId,
       metadata: { orderId },
@@ -124,7 +125,10 @@ export async function POST(request) {
         price_data: {
           currency: "zar",
           unit_amount: product.priceInCents,
-          product_data: { name: product.title },
+          product_data: {
+            name: product.title,
+            tax_code: "txcd_99999999",
+          },
         },
       })),
       success_url: new URL("/?checkout=success", appUrl).toString(),

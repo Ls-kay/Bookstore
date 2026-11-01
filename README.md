@@ -47,8 +47,10 @@ After changing the schema, create and apply a migration with `bun run db:generat
    checkout with card `4242 4242 4242 4242`, any future expiry date, and any
    CVC. The checkout endpoint requires a valid Better Auth session, prices all
    items from the database, and creates pending orders before redirecting to
-   Stripe. Only a verified webhook event matching the order's Stripe session,
-   currency, and total can mark an order paid.
+   Stripe. Physical books aren't eligible for Stripe Managed Payments, so the
+   Checkout Session disables Managed Payments and classifies line items as
+   general tangible goods. Only a verified webhook event matching the order's
+   Stripe session, currency, and total can mark an order paid.
 
 The checkout API enforces the session itself. The Next.js `proxy.js` also blocks
 requests with no Better Auth session cookie before they reach that route; the
