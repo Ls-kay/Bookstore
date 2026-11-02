@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import BookCard from "./BookCard";
+import BookGrid from "./BookGrid";
 import AuthDialog from "./AuthDialog";
+import SectionHeading from "./SectionHeading";
 import { authClient } from "../lib/auth-client.js";
 
 const filters = [
@@ -135,20 +136,12 @@ export default function MainContent() {
     <>
       <section className="bg-[#fffdf8] py-14 sm:py-20" id="books">
         <div className="mx-auto w-full max-w-6xl min-w-0 px-5 md:px-8">
-          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="mb-3 text-xs font-extrabold tracking-[0.17em] text-green">
-                THE GOOD STUFF
-              </p>
-              <h2 className="mb-0 font-display text-4xl font-normal leading-tight tracking-[-0.045em] sm:text-5xl">
-                Find your next <em className="text-[#6e8268]">favourite.</em>
-              </h2>
-            </div>
-            <p className="mb-1 max-w-sm text-[#77796f]">
-              From page-turners to big ideas, there&apos;s something waiting on
-              every shelf.
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow="THE GOOD STUFF"
+            description="From page-turners to big ideas, there’s something waiting on every shelf."
+          >
+            Find your next <em className="text-[#6e8268]">favourite.</em>
+          </SectionHeading>
 
           <div
             className="mb-8 flex flex-wrap gap-2.5"
@@ -327,22 +320,14 @@ export default function MainContent() {
 
       <section className="bg-paper py-14 sm:py-20" id="events">
         <div className="mx-auto w-full max-w-6xl min-w-0 px-5 md:px-8">
-          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="mb-3 text-xs font-extrabold tracking-[0.17em] text-green">
-                BEYOND THE PAGES
-              </p>
-              <h2 className="mb-0 font-display text-4xl font-normal leading-tight tracking-[-0.045em] sm:text-5xl">
-                Come for the books.
-                <br />
-                <em className="text-[#6e8268]">Stay for the people.</em>
-              </h2>
-            </div>
-            <p className="mb-1 max-w-sm text-[#77796f]">
-              Good conversations, new friends, and stories worth sharing.
-              There&apos;s always something happening around here.
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow="BEYOND THE PAGES"
+            description="Good conversations, new friends, and stories worth sharing. There’s always something happening around here."
+          >
+            Come for the books.
+            <br />
+            <em className="text-[#6e8268]">Stay for the people.</em>
+          </SectionHeading>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => {
               const subject = encodeURIComponent(
