@@ -77,25 +77,6 @@ export default function MainContent() {
     return () => controller.abort();
   }, [loadBooks]);
 
-  const loadBooks = useCallback(async (signal) => {
-    setStatus("loading");
-    try {
-      const response = await fetch("/api/books", { signal });
-      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-      setBooks(await response.json());
-      setStatus("ready");
-    } catch (error) {
-      if (error.name === "AbortError") return;
-      setStatus("error");
-    }
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    loadBooks(controller.signal);
-    return () => controller.abort();
-  }, [loadBooks]);
-
   const filteredBooks =
     activeFilter === "all"
       ? books
