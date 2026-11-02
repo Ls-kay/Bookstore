@@ -165,6 +165,23 @@ export default function MainContent() {
             ))}
           </div>
 
+          {status === "loading" && (
+            <div
+              className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
+              aria-busy="true"
+            >
+              {[0, 1, 2].map((placeholder) => (
+                <div
+                  className="h-[28rem] animate-pulse rounded-lg bg-border/60"
+                  key={placeholder}
+                />
+              ))}
+              <p className="sr-only" role="status">
+                Loading books…
+              </p>
+            </div>
+          )}
+
           {status === "error" && (
             <div
               className="rounded-2xl border border-border bg-paper p-6 text-center"
@@ -183,13 +200,26 @@ export default function MainContent() {
             </div>
           )}
 
-          {status !== "error" && (
-            <BookGrid
-              status={status}
-              books={filteredBooks}
-              quantities={quantities}
-              onQuantityChange={updateQuantity}
-            />
+          {status === "ready" && (
+            <>
+              <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredBooks.map((book) => (
+                  <BookCard
+                    book={book}
+                    key={book.id}
+                    quantity={quantities[book.id] ?? 0}
+                    onQuantityChange={(quantity) =>
+                      updateQuantity(book.id, quantity)
+                    }
+                  />
+                ))}
+              </div>
+
+              <p className="sr-only" aria-live="polite">
+                {filteredBooks.length} book
+                {filteredBooks.length === 1 ? "" : "s"} displayed.
+              </p>
+            </>
           )}
 
           <section
